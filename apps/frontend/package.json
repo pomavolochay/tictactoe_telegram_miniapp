@@ -1,0 +1,35 @@
+{
+  "name": "tictactoe-miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "nuxt dev --hostname 0.0.0.0 --port 3000",
+    "build": "nuxt build",
+    "start": "nuxt start --hostname 0.0.0.0 --port 3000",
+    "lint": "eslint .",
+    "test": "vitest run --coverage --run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@nuxtjs/tailwindcss": "^6.11.4",
+    "@pinia/nuxt": "^0.5.1",
+    "nuxt": "^3.12.4",
+    "ofetch": "^1.4.1",
+    "pinia": "^2.1.7"
+  },
+  "devDependencies": {
+    "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@types/node": "^20.11.19",
+    "@vue/test-utils": "^2.4.5",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.5.0",
+    "jsdom": "^24.0.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.2",
+    "vitest": "^1.6.0",
+    "vue-tsc": "^2.0.19"
+  }
+}

@@ -1,0 +1,29 @@
+groups:
+  - name: tictactoe-alerts
+    rules:
+      - alert: TelegramNotificationFailuresHigh
+        expr: increase(telegram_notification_failures_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Telegram notifications are failing"
+          description: "telegram_notification_failures_total is increasing"
+
+      - alert: MoveEndpointLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{path="/api/v1/game"}[5m])) by (le)) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Move endpoint latency above 800ms"
+          description: "p95 latency for /api/v1/game is {{ $value }}s"
+
+      - alert: MoveEndpoint5xxRate
+        expr: (sum(rate(http_requests_total{path="/api/v1/game",status=~"5.."}[5m])) / sum(rate(http_requests_total{path="/api/v1/game"}[5m]))) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "/api/v1/game 5xx rate above 5%"
+          description: "HTTP 5xx rate on /api/v1/game is {{ $value | humanizePercentage }}"

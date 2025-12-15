@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-shell text-cocoa min-h-screen font-sans;
+}
+
+button:focus-visible {
+  @apply outline outline-2 outline-plum/70 outline-offset-2;
+}

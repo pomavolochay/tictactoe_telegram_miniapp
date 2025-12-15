@@ -1,0 +1,47 @@
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Node / Nuxt
+node_modules/
+.pnpm-store/
+.pnpm-debug.log
+npm-debug.log
+yarn-error.log
+.nuxt/
+.output/
+.next/
+dist/
+.cache/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Env & secrets
+.env
+.env.*
+
+# Logs
+*.log
+
+# Frontend build artifacts
+apps/frontend/node_modules/
+apps/frontend/.nuxt/
+apps/frontend/.output/
+apps/frontend/coverage/
+
+# Backend artifacts
+apps/backend/.venv/
+apps/backend/.coverage
+apps/backend/coverage/

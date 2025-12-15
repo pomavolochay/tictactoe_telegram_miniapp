@@ -1,0 +1,47 @@
+map $http_upgrade $upgrade_connection {
+  default upgrade;
+  ''      close;
+}
+
+server {
+  listen 80;
+  server_name ${DOMAIN};
+
+  location /.well-known/acme-challenge/ {
+    alias /var/www/certbot/.well-known/acme-challenge/;
+  }
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl http2;
+  server_name ${DOMAIN};
+
+  include /etc/nginx/snippets/live-cert.conf;
+  include /etc/nginx/snippets/proxy.conf;
+
+  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+
+  location /.well-known/acme-challenge/ {
+    alias /var/www/certbot/.well-known/acme-challenge/;
+  }
+
+  location /api/ {
+    proxy_pass http://backend:8000;
+  }
+
+  location = /metrics {
+    proxy_pass http://backend:8000/metrics;
+  }
+
+  location = /metrics/ {
+    proxy_pass http://backend:8000/metrics/;
+  }
+
+  location / {
+    proxy_pass http://frontend:3000;
+  }
+}

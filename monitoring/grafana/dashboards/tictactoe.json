@@ -1,0 +1,76 @@
+{
+  "title": "TicTacToe",
+  "editable": false,
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP Requests",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(http_requests_total[5m])) by (path)", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p95",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, path))", "refId": "B" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Games Started/Finished",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rate(tictactoe_games_started_total[5m])", "refId": "C" },
+        { "expr": "sum(rate(tictactoe_games_finished_total[5m])) by (result)", "refId": "D" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Moves by Actor",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(tictactoe_moves_total[5m])) by (actor)", "refId": "E" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Invalid Moves",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(tictactoe_invalid_moves_total[5m])) by (reason)", "refId": "F" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Promo Codes",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rate(promo_generated_total[5m])", "refId": "G" },
+        { "expr": "rate(promo_generation_failures_total[5m])", "refId": "H" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Telegram Notifications",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(telegram_notifications_total[5m])) by (type)", "refId": "I" },
+        { "expr": "rate(telegram_notification_failures_total[5m])", "refId": "J" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "AI Compute Duration",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(tictactoe_ai_compute_seconds_bucket[5m])) by (le))", "refId": "K" }
+      ]
+    }
+  ],
+  "templating": { "list": [] }
+}
