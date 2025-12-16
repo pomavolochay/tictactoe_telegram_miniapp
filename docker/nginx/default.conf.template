@@ -22,23 +22,12 @@ server {
 
   include /etc/nginx/snippets/live-cert.conf;
   include /etc/nginx/snippets/proxy.conf;
+  resolver 127.0.0.11 ipv6=off valid=30s;
 
   add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
 
   location /.well-known/acme-challenge/ {
     alias /var/www/certbot/.well-known/acme-challenge/;
-  }
-
-  location /api/ {
-    proxy_pass http://backend:8000;
-  }
-
-  location = /metrics {
-    proxy_pass http://backend:8000/metrics;
-  }
-
-  location = /metrics/ {
-    proxy_pass http://backend:8000/metrics/;
   }
 
   location / {

@@ -11,6 +11,8 @@ services:
         condition: service_started
       frontend:
         condition: service_started
+      grafana:
+        condition: service_started
     ports:
       - "80:80"
       - "443:443"
@@ -45,6 +47,14 @@ services:
     expose:
       - "3000"
 
+  redis:
+    image: redis:7.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -60,14 +70,6 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7.4-alpine
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
   prometheus:
     image: prom/prometheus:v2.54.1
     volumes:
@@ -76,8 +78,6 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--web.enable-lifecycle"
-    expose:
-      - "9090"
     depends_on:
       - backend
 
@@ -95,6 +95,8 @@ services:
       GF_DATABASE_USER: ${POSTGRES_USER}
       GF_DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
       GF_DATABASE_NAME: ${POSTGRES_DB}
+      GF_SERVER_ROOT_URL: https://${DOMAIN}/grafana
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     depends_on:
       prometheus:
         condition: service_started
