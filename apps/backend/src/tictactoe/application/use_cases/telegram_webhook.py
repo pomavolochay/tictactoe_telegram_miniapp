@@ -6,14 +6,14 @@ from typing import Any, Mapping
 import structlog
 
 from ...config import Settings
-from ..interfaces import TelegramClient
+from ...application.services.telegram import WELCOME_CAPTION, TelegramNotificationService
 
 logger = structlog.get_logger()
 
 
 @dataclass(frozen=True, slots=True)
 class TelegramWebhookUseCase:
-    client: TelegramClient
+    telegram_service: TelegramNotificationService
     settings: Settings
 
     async def handle_update(self, update: Mapping[str, Any]) -> None:
@@ -60,15 +60,7 @@ class TelegramWebhookUseCase:
                 ]
             ]
         }
-        text = (
-            "Привет! Готова сыграть в уютный TicTacToe?\n"
-            "Нажми на кнопку ниже - поле уже ждёт твой первый ход."
-        )
-        try:
-            await self.client.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
-            logger.info("telegram_welcome_sent", chat_id=chat_id)
-        except Exception as exc:  # pragma: no cover
-            logger.warning("telegram_welcome_send_failed", chat_id=chat_id, error=str(exc))
+        await self.telegram_service.notify_welcome(chat_id=chat_id, reply_markup=reply_markup)
 
     def _resolve_webapp_url(self) -> str:
         origin = (self.settings.frontend_origin or "").strip()

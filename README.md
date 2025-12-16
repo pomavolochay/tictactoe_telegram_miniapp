@@ -245,3 +245,7 @@ https://<host>:9443
 Изменение уровня сложности не требует перекомпиляции — достаточно перезапустить контейнеры с новым значением `GAME_DIFFICULTY_LEVEL`.
 
 ---
+
+Telegram assets:
+- Images for bot messages live in `apps/backend/assets/telegram/` (`welcome.png`, `win.png`, `lose.png`).
+- Override location with `TELEGRAM_ASSETS_DIR` if you store custom art elsewhere.

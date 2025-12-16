@@ -9,10 +9,10 @@
       :aria-describedby="descId"
       tabindex="-1"
       @keydown.esc.prevent="onReset"
+      @click.self="onReset"
+      ref="overlayRef"
     >
-      <div
-        class="w-full max-w-md rounded-[32px] bg-white/95 p-8 text-center shadow-2xl"
-      >
+      <div class="w-full max-w-md rounded-[32px] bg-white/95 p-8 text-center shadow-2xl">
         <p v-if="badge" class="text-sm uppercase tracking-[0.3em] text-plum/70">
           {{ badge }}
         </p>
@@ -25,13 +25,8 @@
           {{ description }}
         </p>
 
-        <div
-          v-if="status === 'win' && promoCode"
-          class="mt-6 flex flex-col items-center gap-3"
-        >
-          <div
-            class="rounded-2xl bg-mist px-6 py-4 text-3xl font-serif tracking-widest text-plum"
-          >
+        <div v-if="status === 'win' && promoCode" class="mt-6 flex flex-col items-center gap-3">
+          <div class="rounded-2xl bg-mist px-6 py-4 text-3xl font-serif tracking-widest text-plum">
             {{ promoCode }}
           </div>
 
@@ -47,6 +42,7 @@
 
         <div class="mt-8 flex flex-col gap-3">
           <button
+            ref="primaryButtonRef"
             type="button"
             class="rounded-full bg-gradient-to-r from-petal to-lilac px-6 py-3 text-sm font-semibold text-cocoa shadow-lg"
             @click="onReset"
@@ -60,9 +56,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
+import { useId } from "#imports";
 
-type GameStatus = "idle" | "in_progress" | "win" | "lose" | "draw";
+type GameStatus = "in_progress" | "win" | "lose" | "draw";
 
 const props = withDefaults(
   defineProps<{
@@ -74,7 +71,6 @@ const props = withDefaults(
   }>(),
   {
     promoCode: null,
-    status: "idle",
   }
 );
 
@@ -83,24 +79,25 @@ const emit = defineEmits<{
   copy: [];
 }>();
 
-const copyButtonLabel =
-  "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043a\u043e\u0434";
-const resetButtonLabel =
-  "\u0421\u044b\u0433\u0440\u0430\u0442\u044c \u0435\u0449\u0451 \u0440\u0430\u0437";
-const copyButtonAriaLabel =
-  "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434";
+const copyButtonLabel = "Скопировать код";
+const resetButtonLabel = "Сыграть ещё раз";
+const copyButtonAriaLabel = "Скопировать промокод";
 
-const titleId = "result-modal-title";
-const descId = "result-modal-desc";
+const uid = useId();
+const titleId = `result-modal-title-${uid}`;
+const descId = `result-modal-desc-${uid}`;
+
+const overlayRef = ref<HTMLDivElement | null>(null);
+const primaryButtonRef = ref<HTMLButtonElement | null>(null);
 
 const badge = computed(() => {
   switch (props.status) {
     case "win":
-      return "\u041f\u043e\u0431\u0435\u0434\u0430";
+      return "Победа";
     case "lose":
-      return "\u041f\u043e\u0440\u0430\u0436\u0435\u043d\u0438\u0435";
+      return "Поражение";
     case "draw":
-      return "\u041d\u0438\u0447\u044c\u044f";
+      return "Ничья";
     default:
       return "";
   }
@@ -113,6 +110,19 @@ function onReset() {
 function onCopy() {
   emit("copy");
 }
+
+// Фокус при открытии: сначала на основную кнопку, иначе на overlay
+watch(
+  () => props.visible,
+  async (v) => {
+    if (!v) return;
+    await nextTick();
+    primaryButtonRef.value?.focus?.();
+    if (document.activeElement !== primaryButtonRef.value) {
+      overlayRef.value?.focus?.();
+    }
+  }
+);
 </script>
 
 <style scoped>

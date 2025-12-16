@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 COPY README.md ./README.md
 COPY apps/backend/pyproject.toml ./pyproject.toml
 COPY apps/backend/src ./src
+COPY apps/backend/assets ./assets
 RUN uv sync --no-dev
 
 FROM base AS dev

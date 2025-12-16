@@ -65,6 +65,7 @@ TELEGRAM_NOTIFICATIONS_TOTAL: Final = Counter(
 TELEGRAM_NOTIFICATION_FAILURES_TOTAL: Final = Counter(
     "telegram_notification_failures_total",
     "Telegram notification failures",
+    labelnames=("type",),
 )
 TELEGRAM_NOTIFICATION_DURATION_SECONDS: Final = Histogram(
     "telegram_notification_duration_seconds",
@@ -102,8 +103,8 @@ class MetricsAdapter:
     def inc_telegram_notification(self, notification_type: str) -> None:
         TELEGRAM_NOTIFICATIONS_TOTAL.labels(type=notification_type).inc()
 
-    def inc_telegram_notification_failure(self) -> None:
-        TELEGRAM_NOTIFICATION_FAILURES_TOTAL.inc()
+    def inc_telegram_notification_failure(self, notification_type: str) -> None:
+        TELEGRAM_NOTIFICATION_FAILURES_TOTAL.labels(type=notification_type).inc()
 
     def observe_telegram_notification(self, duration_seconds: float) -> None:
         TELEGRAM_NOTIFICATION_DURATION_SECONDS.observe(duration_seconds)

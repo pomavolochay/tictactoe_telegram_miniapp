@@ -68,7 +68,7 @@ def get_telegram_service(
     settings: Settings = Depends(get_settings),
 ) -> TelegramNotificationService:
     chat_ids: Iterable[str] = settings.telegram_chat_ids
-    return TelegramNotificationService(client=client, metrics=metrics, chat_ids=chat_ids)
+    return TelegramNotificationService(client=client, metrics=metrics, chat_ids=chat_ids, settings=settings)
 
 
 def get_make_move_use_case(
@@ -92,7 +92,7 @@ def get_reset_game_use_case() -> ResetGameUseCase:
 
 
 def get_telegram_webhook_use_case(
-    client=Depends(get_telegram_client),
+    telegram_service: TelegramNotificationService = Depends(get_telegram_service),
     settings: Settings = Depends(get_settings),
 ) -> TelegramWebhookUseCase:
-    return TelegramWebhookUseCase(client=client, settings=settings)
+    return TelegramWebhookUseCase(telegram_service=telegram_service, settings=settings)

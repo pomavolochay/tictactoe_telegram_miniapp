@@ -1,11 +1,13 @@
 <template>
-  <main class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+  <main class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10" :aria-busy="store.isLoading">
     <div class="pointer-events-none absolute inset-0">
       <div class="absolute inset-y-10 left-0 h-64 w-64 -translate-x-1/3 rounded-full bg-petal blur-3xl" />
       <div class="absolute bottom-0 right-4 h-64 w-64 translate-y-1/3 rounded-full bg-mist blur-3xl" />
     </div>
 
-    <div class="relative z-10 grid w-full max-w-4xl gap-8 rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-2xl backdrop-blur-lg md:grid-cols-[1.1fr,0.9fr]">
+    <div
+      class="relative z-10 grid w-full max-w-4xl gap-8 rounded-[32px] border border-white/50 bg-white/70 p-6 shadow-2xl backdrop-blur-lg md:grid-cols-[1.1fr,0.9fr]"
+    >
       <section class="flex flex-col justify-between gap-6">
         <div>
           <p class="text-xs uppercase tracking-[0.6em] text-plum/70">{{ heroBadge }}</p>
@@ -16,10 +18,12 @@
             {{ heroDescription }}
           </p>
         </div>
+
         <div class="rounded-full bg-mist/80 px-4 py-2 text-sm text-sage shadow-inner">
           {{ hintChipLabel }}:
           <span class="font-semibold text-cocoa">{{ statusHint }}</span>
         </div>
+
         <div class="rounded-2xl border border-lilac/30 bg-white/70 p-4 text-sm text-cocoa/70 shadow-inner">
           <p v-for="line in instructionLines" :key="line">{{ line }}</p>
         </div>
@@ -33,7 +37,9 @@
           </p>
         </div>
 
-        <p v-if="store.error" class="rounded-2xl bg-coral/20 px-4 py-3 text-center text-sm text-plum">{{ store.error }}</p>
+        <p v-if="store.error" class="rounded-2xl bg-coral/20 px-4 py-3 text-center text-sm text-plum">
+          {{ store.error }}
+        </p>
 
         <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-cocoa/70">
           <span>
@@ -43,16 +49,17 @@
 
           <div class="flex gap-2">
             <button
-              class="rounded-full bg-mist px-5 py-2 text-sm font-semibold text-cocoa shadow-sm transition hover:bg-mist/70 disabled:opacity-60"
               type="button"
+              class="rounded-full bg-mist px-5 py-2 text-sm font-semibold text-cocoa shadow-sm transition hover:bg-mist/70 disabled:opacity-60"
               :disabled="store.isLoading"
               @click="store.resetGame"
             >
               {{ refreshButtonLabel }}
             </button>
+
             <button
-              class="rounded-full border border-plum/20 bg-plum/90 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 disabled:opacity-60"
               type="button"
+              class="rounded-full border border-plum/20 bg-plum/90 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 disabled:opacity-60"
               :disabled="store.isLoading || !store.isBoardLocked"
               @click="store.resetGame"
             >
@@ -77,6 +84,8 @@
       <div
         v-if="copied"
         class="fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-plum px-6 py-2 text-sm text-white shadow-xl"
+        role="status"
+        aria-live="polite"
       >
         {{ toastText }}
       </div>
@@ -85,79 +94,110 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from "vue";
 
-import Board from '~/components/Board.vue'
-import ResultModal from '~/components/ResultModal.vue'
-import { useGameStore } from '~/stores/game'
+import Board from "~/components/Board.vue";
+import ResultModal from "~/components/ResultModal.vue";
+import { useGameStore } from "~/stores/game";
 
-const store = useGameStore()
-const copied = ref(false)
+const store = useGameStore();
 
-const heroBadge = '\u0423\u044e\u0442\u043d\u044b\u0439 \u0447\u0435\u043b\u043b\u0435\u043d\u0434\u0436'
-const heroTitle = '\u0422\u0432\u043e\u044f \u0443\u044e\u0442\u043d\u0430\u044f TicTacToe-\u0432\u0441\u0435\u043b\u0435\u043d\u043d\u0430\u044f'
+const copied = ref(false);
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+const heroBadge = "Уютный челлендж";
+const heroTitle = "Твоя уютная TicTacToe-вселенная";
 const heroDescription =
-  '\u0421\u044b\u0433\u0440\u0430\u0439 \u043f\u0440\u043e\u0442\u0438\u0432 \u0434\u0440\u0443\u0436\u0435\u043b\u044e\u0431\u043d\u043e\u0433\u043e AI: \u043e\u043d \u043b\u044e\u0431\u0438\u0442 \u0432\u044b\u0441\u0447\u0438\u0442\u0430\u043d\u043d\u044b\u0435 \u0445\u043e\u0434\u044b, \u043d\u043e \u043d\u0435 \u0441\u043f\u043e\u0441\u043e\u0431\u0435\u043d \u0441\u043f\u0440\u044f\u0442\u0430\u0442\u044c\u0441\u044f \u043e\u0442 \u0442\u0432\u043e\u0435\u0439 \u0438\u043d\u0442\u0443\u0438\u0446\u0438\u0438.'
-const hintChipLabel = '\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430'
-const instructionLines = [
-  '\u0058 \u2014 \u0442\u0432\u043e\u0439 \u0441\u0438\u043c\u0432\u043e\u043b, \u043f\u043e\u043b\u043d\u044b\u0439 \u0443\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0441\u0442\u0438',
-  '\u004f \u2014 \u0440\u0435\u0448\u0438\u043c\u043e\u0441\u0442\u044c \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0430',
-  '\u041f\u0443\u0441\u0442\u0430\u044f \u043a\u043b\u0435\u0442\u043a\u0430 \u2014 \u043c\u0435\u0441\u0442\u043e \u0434\u043b\u044f \u043d\u043e\u0432\u043e\u0433\u043e \u043c\u0438\u043a\u0440\u043e-\u043f\u043e\u0434\u0432\u0438\u0433\u0430',
-]
-const turnLabel = '\u0427\u0435\u0439 \u0445\u043e\u0434'
-const playerTurnLabel = '\u0422\u044b'
-const computerTurnLabel = '\u041a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440'
-const aiThinkingLabel = '\u0418\u0418 \u0434\u0443\u043c\u0430\u0435\u0442...'
-const noTurnLabel = '\u041f\u0430\u0440\u0442\u0438\u044f \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430'
-const refreshButtonLabel = '\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u043f\u043e\u043b\u0435'
-const playAgainButtonLabel = '\u0421\u044b\u0433\u0440\u0430\u0442\u044c \u0435\u0449\u0451 \u0440\u0430\u0437'
-const toastText = '\u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d!'
+  "Сыграй против дружелюбного AI: он любит высчитанные ходы, но не способен спрятаться от твоей интуиции.";
+const hintChipLabel = "Подсказка";
 
-const boardDisabled = computed(() => store.isBoardLocked || store.isLoading)
+const instructionLines = [
+  "X — твой символ, полный уверенности",
+  "O — решимость компьютера",
+  "Пустая клетка — место для нового микро-подвига",
+];
+
+const turnLabel = "Чей ход";
+const playerTurnLabel = "Ты";
+const computerTurnLabel = "Компьютер";
+const aiThinkingLabel = "ИИ думает...";
+const noTurnLabel = "Партия завершена";
+
+const refreshButtonLabel = "Обновить поле";
+const playAgainButtonLabel = "Сыграть ещё раз";
+const toastText = "Промокод скопирован!";
+
+const boardDisabled = computed(() => store.isBoardLocked || store.isLoading);
 
 const statusHint = computed(() => {
-  if (store.status === 'win') return '\u0417\u0430\u0431\u0435\u0440\u0438 \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434'
-  if (store.status === 'lose') return '\u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439 \u043d\u043e\u0432\u0443\u044e \u0442\u0430\u043a\u0442\u0438\u043a\u0443'
-  if (store.status === 'draw') return '\u0427\u0435\u0441\u0442\u043d\u0430\u044f \u043d\u0438\u0447\u044c\u044f'
-  return '\u0421\u043b\u0435\u0434\u0438 \u0437\u0430 \u0448\u0430\u0433\u0430\u043c\u0438 AI'
-})
+  if (store.status === "win") return "Забери промокод";
+  if (store.status === "lose") return "Попробуй новую тактику";
+  if (store.status === "draw") return "Честная ничья";
+  return "Следи за шагами AI";
+});
 
 const boardCaption = computed(() => {
-  if (store.status === 'win') return '\u041f\u043e\u043b\u0435 \u0436\u0434\u0451\u0442 \u043d\u043e\u0432\u0443\u044e \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044e, \u043a\u043e\u0442\u043e\u0440\u0430\u044f \u0442\u0430\u043a \u0436\u0435 \u043c\u044f\u0433\u043a\u0430.'
-  if (store.status === 'lose') return '\u0420\u0435\u0432\u0430\u043d\u0448 \u0443\u0436\u0435 \u0440\u044f\u0434\u043e\u043c: \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440 \u0432\u0441\u0435\u0433\u043e \u043b\u0438\u0448\u044c \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0434\u043e\u0432 \u0432\u043f\u0435\u0440\u0451\u0434.'
-  if (store.status === 'draw') return '\u0421\u0438\u043b\u044b \u0440\u0430\u0432\u043d\u044b \u2014 \u043d\u0430\u0436\u043c\u0438 \u0441\u0431\u0440\u043e\u0441 \u0438 \u0437\u0430\u0434\u0430\u0439 \u043d\u043e\u0432\u0443\u044e \u043b\u0435\u043a\u0433\u0443\u044e \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044e.'
-  return '\u0412\u044b\u0431\u0435\u0440\u0438 \u043a\u043b\u0435\u0442\u043a\u0443, \u0447\u0442\u043e\u0431\u044b \u0441\u0434\u0435\u043b\u0430\u0442\u044c \u043c\u044f\u0433\u043a\u0438\u0439 \u043f\u0435\u0440\u0432\u044b\u0439 \u0445\u043e\u0434.'
-})
+  if (store.status === "win") return "Поле ждёт новую стратегию, которая так же мягка.";
+  if (store.status === "lose") return "Реванш уже рядом: компьютер всего лишь несколько ходов вперёд.";
+  if (store.status === "draw") return "Силы равны — нажми сброс и задай новую лёгкую стратегию.";
+  return "Выбери клетку, чтобы сделать мягкий первый ход.";
+});
 
 const currentTurn = computed(() => {
-  if (store.hasResult) return noTurnLabel
-  if (store.isLoading) return aiThinkingLabel
-  if (store.next === 'player') return playerTurnLabel
-  if (store.next === 'computer') return computerTurnLabel
-  return noTurnLabel
-})
+  if (store.hasResult) return noTurnLabel;
+
+  // Пока идёт запрос на /move — считаем, что «думает» ИИ
+  if (store.isLoading) return aiThinkingLabel;
+
+  if (store.next === "player") return playerTurnLabel;
+  if (store.next === "computer") return computerTurnLabel;
+
+  return noTurnLabel;
+});
 
 const onSelect = (index: number) => {
-  if (boardDisabled.value) return
-  store.playerMove(index)
-}
+  if (boardDisabled.value) return;
+  store.playerMove(index);
+};
 
-const copyPromo = async () => {
-  if (!store.promoCode) return
+async function copyPromo() {
+  if (!store.promoCode) return;
+
   try {
-    await navigator.clipboard.writeText(store.promoCode)
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 1500)
+    // modern clipboard API
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(store.promoCode);
+    } else {
+      // fallback
+      const el = document.createElement("textarea");
+      el.value = store.promoCode;
+      el.setAttribute("readonly", "");
+      el.style.position = "absolute";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+
+    copied.value = true;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      copied.value = false;
+      toastTimer = null;
+    }, 1500);
   } catch {
     // ignore
   }
 }
 
 onMounted(() => {
-  store.bootstrap()
-})
+  store.bootstrap();
+});
+
+onBeforeUnmount(() => {
+  if (toastTimer) clearTimeout(toastTimer);
+});
 </script>
 
 <style scoped>

@@ -69,6 +69,7 @@ async def test_make_move_player_win() -> None:
         move_index=2,
         player_symbol="X",
         init_data=build_init_data(777),
+        chat_id=None,
     )
     result = await use_case.execute(command)
     assert result.status == "win"
@@ -90,6 +91,7 @@ async def test_make_move_draw() -> None:
             move_index=8,
             player_symbol="X",
             init_data=build_init_data(),
+            chat_id=None,
         )
     )
     assert result.status == "draw"
@@ -109,6 +111,7 @@ async def test_make_move_loss_triggers_notification_with_chat_id() -> None:
             move_index=3,
             player_symbol="X",
             init_data=build_init_data(555),
+            chat_id=None,
         )
     )
     assert result.status == "lose"
@@ -128,6 +131,7 @@ async def test_make_move_rejects_invalid_position() -> None:
         move_index=0,
         player_symbol="X",
         init_data=None,
+        chat_id=None,
     )
     with pytest.raises(InvalidMoveError):
         await use_case.execute(command)

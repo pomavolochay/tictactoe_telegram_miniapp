@@ -12,8 +12,19 @@ class PromoCodeRepository(Protocol):
 
 
 class TelegramClient(Protocol):
-    async def send_message(self, *, chat_id: str, text: str) -> None:
+    async def send_message(self, *, chat_id: str, text: str, reply_markup: dict | None = None) -> None:
         """Send a Telegram message to chat_id."""
+
+    async def send_photo(
+        self,
+        *,
+        chat_id: str,
+        photo_path: str,
+        caption: str,
+        reply_markup: dict | None = None,
+        parse_mode: str = "HTML",
+    ) -> None:
+        """Send a Telegram photo with optional caption to chat_id."""
 
 
 class MetricsRecorder(Protocol):
@@ -35,6 +46,6 @@ class MetricsRecorder(Protocol):
 
     def inc_telegram_notification(self, notification_type: str) -> None: ...
 
-    def inc_telegram_notification_failure(self) -> None: ...
+    def inc_telegram_notification_failure(self, notification_type: str) -> None: ...
 
     def observe_telegram_notification(self, duration_seconds: float) -> None: ...

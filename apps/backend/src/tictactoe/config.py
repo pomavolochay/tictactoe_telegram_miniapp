@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     letsencrypt_email: str | None = Field(default=None, validation_alias="LETSENCRYPT_EMAIL")
     domain: str | None = Field(default=None, validation_alias="DOMAIN")
     game_difficulty_level: int = Field(default=2, validation_alias="GAME_DIFFICULTY_LEVEL")
+    telegram_assets_dir: str = Field(default="assets/telegram", validation_alias="TELEGRAM_ASSETS_DIR")
 
     model_config = SettingsConfigDict(env_file="../../.env", env_file_encoding="utf-8", extra="ignore")
 
