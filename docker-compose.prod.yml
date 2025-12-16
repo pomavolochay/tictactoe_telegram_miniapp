@@ -59,9 +59,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-grafana_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-grafana_admin}
+      POSTGRES_DB: ${POSTGRES_DB:-grafana_admin}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -92,9 +92,9 @@ services:
       GF_USERS_AUTO_ASSIGN_ORG_ROLE: Editor
       GF_DATABASE_TYPE: postgres
       GF_DATABASE_HOST: postgres:5432
-      GF_DATABASE_USER: ${POSTGRES_USER}
-      GF_DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
-      GF_DATABASE_NAME: ${POSTGRES_DB}
+      GF_DATABASE_USER: ${POSTGRES_USER:-grafana_admin}
+      GF_DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-grafana_admin}
+      GF_DATABASE_NAME: ${POSTGRES_DB:-grafana_admin}
       GF_SERVER_ROOT_URL: https://${DOMAIN}/grafana
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     depends_on:
